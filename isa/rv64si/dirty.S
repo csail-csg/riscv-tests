@@ -68,6 +68,9 @@ RVTEST_CODE_BEGIN
   sfence.vma
   sw a0, page_table_1 - DRAM_BASE, t0
   j die
+
+  # disable virtual memory before passing
+  csrwi sptbr, 0
   
   RVTEST_PASS
 
@@ -113,6 +116,8 @@ skip:
 
 1:
 die:
+  # disable virtual memory before failing
+  csrwi sptbr, 0
   RVTEST_FAIL
 
 RVTEST_CODE_END
