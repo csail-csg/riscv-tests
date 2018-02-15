@@ -40,6 +40,10 @@ static char* counter_names[NUM_COUNTERS];
 void setStats(int enable)
 {
   int i = 0;
+
+  // set non-standard CSR stats
+  asm volatile ("csrw 0x801, %0" :: "rK"(enable));
+
 #define READ_CTR(name) do { \
     while (i >= NUM_COUNTERS) ; \
     uintptr_t csr = read_csr(name); \
