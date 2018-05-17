@@ -26,7 +26,14 @@ SECTIONS
   .text.init : { *(.text.init) }
 
   . = ALIGN(0x1000);
+
+  /* [sizhuo] FIXME fix tohost/fromhost addr to be same as linux. This
+   * is because we currently use these fixed addr in sanctum boot rom
+   * to print keys, and we need to check every elf that tohost/fromhost
+   * match these addrs before starting processor with the elf. */
+  . = 0x80009000;
   .tohost : { *(.tohost) }
+  . = ALIGN(0x1000);
 
   .text : { *(.text) }
 

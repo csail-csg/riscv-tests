@@ -228,10 +228,9 @@ _tdata_end:
 .globl _tbss_end
 _tbss_end:
 
+// [sizhuo] make tohost/fromhost addr same as bbl
 .section ".tohost","aw",@progbits
-.align 6
-.globl tohost
-tohost: .dword 0
-.align 6
 .globl fromhost
 fromhost: .dword 0
+.globl tohost
+tohost: .dword 0
