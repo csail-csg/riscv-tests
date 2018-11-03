@@ -31,6 +31,7 @@ bmarks = \
 	mt-matmul \
 	pmp \
 	fp_func \
+	security_flush \
 
 #--------------------------------------------------------------------
 # Build rules
