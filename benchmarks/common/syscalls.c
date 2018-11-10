@@ -15,23 +15,25 @@
 extern volatile uint64_t tohost;
 extern volatile uint64_t fromhost;
 
-static uintptr_t syscall(uintptr_t which, uint64_t arg0, uint64_t arg1, uint64_t arg2)
-{
-  volatile uint64_t magic_mem[8] __attribute__((aligned(64)));
-  magic_mem[0] = which;
-  magic_mem[1] = arg0;
-  magic_mem[2] = arg1;
-  magic_mem[3] = arg2;
-  __sync_synchronize();
-
-  tohost = (uintptr_t)magic_mem;
-  while (fromhost == 0)
-    ;
-  fromhost = 0;
-
-  __sync_synchronize();
-  return magic_mem[0];
-}
+// Since we going to untether, htif will no be able to peek into RISC-V
+// processor's memory. This way of doing syscall is thus deprecated.
+//static uintptr_t syscall(uintptr_t which, uint64_t arg0, uint64_t arg1, uint64_t arg2)
+//{
+//  volatile uint64_t magic_mem[8] __attribute__((aligned(64)));
+//  magic_mem[0] = which;
+//  magic_mem[1] = arg0;
+//  magic_mem[2] = arg1;
+//  magic_mem[3] = arg2;
+//  __sync_synchronize();
+//
+//  tohost = (uintptr_t)magic_mem;
+//  while (fromhost == 0)
+//    ;
+//  fromhost = 0;
+//
+//  __sync_synchronize();
+//  return magic_mem[0];
+//}
 
 #define NUM_COUNTERS 2
 static uintptr_t counters[NUM_COUNTERS];
@@ -78,9 +80,28 @@ void abort()
   exit(128 + SIGABRT);
 }
 
+// print char using bcd in htif. Note that write to bcd will not get any resp
+// in fromhost.
+void inline print_char(char c)
+{
+  tohost = ( ((uint64_t)1 << 56) |     // device 1: bcd
+             ((uint64_t)1 << 48) |     // cmd 1: write
+             (uint64_t)((uint8_t)c) ); // payload: character
+  // no resp in fromhost, just make sure tohost has been sent
+  while(tohost != 0);
+}
+
+void inline print_str(const char *s, int len)
+{
+  for(int i = 0; i < len; i++) {
+    print_char(s[i]);
+  }
+}
+
 void printstr(const char* s)
 {
-  syscall(SYS_write, 1, (uintptr_t)s, strlen(s));
+  //syscall(SYS_write, 1, (uintptr_t)s, strlen(s));
+  print_str(s, strlen(s));
 }
 
 void __attribute__((weak)) thread_entry(int cid, int nc)
@@ -137,7 +158,8 @@ int putchar(int ch)
 
   if (ch == '\n' || buflen == sizeof(buf))
   {
-    syscall(SYS_write, 1, (uintptr_t)buf, buflen);
+    //syscall(SYS_write, 1, (uintptr_t)buf, buflen);
+    print_str(buf, buflen);
     buflen = 0;
   }
 
