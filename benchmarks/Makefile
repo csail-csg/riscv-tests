@@ -32,6 +32,7 @@ bmarks = \
 	pmp \
 	fp_func \
 	security_flush \
+	trng \
 
 #--------------------------------------------------------------------
 # Build rules
