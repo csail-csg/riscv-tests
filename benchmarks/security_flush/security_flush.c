@@ -7,7 +7,7 @@ int main( int argc, char* argv[] ) {
 
   setStats(1);
   for (i = 0; i < N; i++) {
-    asm volatile ("csrwi 0x802, 1"); // FIXME Flush CSR addr may change
+    asm volatile ("csrwi 0x7c9, 1");
   }
   setStats(0);
 
